@@ -1,0 +1,31 @@
+#!/bin/bash
+# Get latitude and longitude from adress
+# USAGE: getlalo [address]
+# Maximum field = 20
+# Informations are obtained from "Google maps"
+if [ -z $1 ];then
+	comm=$(echo $0 | awk -F/ '{printf "%s", $NF}')
+	echo "USAGE: $comm [address]"
+	echo
+	echo "Maximum number of fields = 20"
+	echo "address, la, lo information from Googld Maps"
+	exit 0;
+fi
+
+infofile=address.temproray.information
+url=$(echo | awk 'BEGIN{printf "https://maps.googleapis.com/maps/api/geocode/json?address="}{for(n=1;n<4;n++) printf "$%d+",n}END{printf "$%d&sensor=true",n}')
+python -c  "import urllib2; print urllib2.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=$1+$2+$3+$4+$5+$6+$7+$8+$9+$10+$11+$12+$13+$14+$15+$16+$17+$18+$19+$20&sensor=true').read()" > $infofile
+nline=$(cat $infofile | grep "formatted_address" | wc -l)
+if [ $nline = 0 ];then
+	echo "ERROR:Such address cannot be found."
+elif [ $nline = 1 ];then
+	add=$(cat $infofile | grep "formatted_address" | awk -F"\"" '{print $4}')
+	nr=$(cat $infofile | grep -n '\"location\" : {' | awk -F":" '{print $1}')
+	la=$(cat $infofile | awk -v nr=$nr '{if(NR==(nr+1)) print $3}')
+	lo=$(cat $infofile | awk -v nr=$nr '{if(NR==(nr+2)) print $3}')
+	echo $add "/" $la $lo
+else
+	echo "ERROR: Multiple locations are found."
+	cat $infofile | grep "formatted_address" | awk -F"\"" '{print "ADDRESS",NR,":",$4}'
+fi
+rm $infofile -f

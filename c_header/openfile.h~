@@ -1,0 +1,20 @@
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string.h>
+int get_line(FILE *f)
+{
+	
+	char buf[10000];
+	int n=0;
+	rewind(f);
+	while(1)
+	{
+		fgets(buf,10000,f);
+		if(feof(f)) break;
+		n++;
+	}
+	rewind(f);
+	return n;
+}

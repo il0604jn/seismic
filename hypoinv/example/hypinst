@@ -1,0 +1,14 @@
+*event 1 script, ak135 velocity model
+
+200 t 2000 0			
+H71 1 1 3
+STA 'stn.STA'
+CRH 1 'iasp.CRH'
+POS 1.73		
+PHS 'phase.PHS'		
+FIL
+COP 1
+CAR 1				
+ARC 'result.arc'		
+PRT 'result.prt'
+LOC			

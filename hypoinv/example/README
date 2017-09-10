@@ -1,0 +1,6 @@
+## comamnds ##
+hypst stlist.txt stn.STA
+hypph phlist.txt phase.PHS
+cp hypinput hypinst
+hyp1.40 &
+hyp_getresult result.prt

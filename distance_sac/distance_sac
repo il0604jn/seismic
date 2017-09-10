@@ -1,0 +1,16 @@
+#!/bin/bash
+sacfile=/home/houng/myworks/commands/distance_sac/sample.sac
+if [ -z $4 ];then
+	comm=$(echo $0 | awk -F/ '{print $NF}')
+	echo USAGE: $comm [evla] [evlo] [stla] [stlo]
+	echo USAGE: $comm [la1] [lo1] [la2] [lo2]
+	exit 0;
+else
+	evla=$1
+	evlo=$2
+	stla=$3
+	stlo=$4
+	echo "r $sacfile;ch evla $1 evlo $2 stla $3 stlo $4;wh;q" | sac
+	dist=$(getSACheader $sacfile dist)
+	echo $dist
+fi

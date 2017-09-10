@@ -1,0 +1,18 @@
+* 060_tohoku_0020690.3_36.80_125.50/
+
+200 t 2000 0
+H71 1 1 3
+STA "station.STA"
+CRH 1 "cab.CRH"
+POS 1.73
+PHS "phase.PHA"
+WET 1.0 0.5 0.2 0.1
+SWT 1.0
+JUN T
+DIS 4 50 1 3
+FIL
+COP 1
+CAR 1
+ARC "result.cab.arc"
+PRT "result.cab.prt"
+LOC

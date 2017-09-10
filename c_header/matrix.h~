@@ -1,0 +1,19 @@
+#include <math.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string.h>
+
+double *Mult(double *a, int na, int ma, double *b,)
+{	
+	char buf[10000];
+	int n=0;
+	rewind(f);
+	while(1)
+	{
+		fgets(buf,10000,f);
+		if(feof(f)) break;
+		n++;
+	}
+	rewind(f);
+	return n;
+}

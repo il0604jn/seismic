@@ -1,0 +1,54 @@
+#!/bin/bash
+### MAKING HYPOINVERSE STATION INPUT FILE ###
+
+if [ -z $2 ];then
+com=$(echo $0 | awk -F"/" '{print $NF}')
+cat <<catend
+USAGE: $com [input filename] [output filename]
+
+== input file structure ==
+stnm1 stla1 stlo1 stel1
+stnm2 stla2 stlo2 stel2 
+stnm3 stla3 stlo3 stel3
+...
+*stataion elevation in meters
+*To comment specific line, add "#".
+*if no stel info: put "x"
+catend
+exit 0
+fi
+
+
+stfile=$1
+HYPstn=$2; echo -n > $HYPstn
+IFS=$'\n'
+for line in $(cat $stfile | grep -v '#' | grep -v ":");do
+	stnm=$(echo $line | awk '{printf "%-4s", $1}')
+	stla=$(echo $line | awk '{print $2}')
+	stlo=$(echo $line | awk '{print $3}')
+	stel=$(echo $line | awk '{print $4}')
+	if [ $stel = "x"  ];then
+		stel="0000"
+	else
+		stel=$(echo $stel | awk '{printf "%4d",$1}')
+	fi
+	laD=$(echo $stla | awk -F. '{printf "%3d", ($1>0)?$1:(-$1)}')
+	laM=$(echo $stla | awk -F. '{printf "0.%d", $2}' | awk '{printf $1*100}'| awk '{printf "%07.4f", $1*60/100}')
+	
+	loD=$(echo $stlo | awk -F. '{printf "%3d", ($1>0)?$1:(-$1)}')
+	loM=$(echo $stlo | awk -F. '{printf "0.%d", $2}' | awk '{printf $1*100}'| awk '{printf "%07.4f", $1*60/100}')
+
+	if [ $(echo $stla | grep "-") ];then
+		dirNS=S
+	else
+		dirNS=N
+	fi
+	if [ $(echo $stlo | grep "-") ];then
+		dirEW=W
+	else
+		dirEW=E
+	fi
+	
+	echo $stnm"          "$laD $laM$dirNS$loD $loM$dirEW$stel"0.0     0.00  0.00  0.00  0.00    0.00"
+done >> $HYPstn
+echo "Making station file [$HYPstn] done!" 1>&2

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Get latitude and longitude from adress
+# USAGE: getlalo [address]
+# Maximum field = 20
+# Informations are obtained from "Google maps"
+infofile=address.temproray.information
+python -c  "import urllib2; print urllib2.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=$1+$2+$3+$4+$5+$6+$7+$8+$9+$10+$11+$12+$13+$14+$15+$16+$17+$18+$19+$20&sensor=true').read()" > $infofile
+nline=$(cat $infofile | grep "formatted_address" | wc -l)
+if [ $nline = 0 ];then
+	echo "ERROR:Such address cannot be found."
+elif [ $nline = 1 ];then
+	add=$(cat $infofile | grep "formatted_address" | awk -F"\"" '{print $4}')
+	la=$(cat $infofile | grep "\"lat\"" | head -n 3 | tail -n 1 | awk '{print $3}')
+	lo=$(cat $infofile | grep "\"lng\"" | head -n 3 | tail -n 1 | awk '{print $3}')
+	echo $add "/" $la $lo
+else
+	echo "ERROR: Multiple locations are found."
+	cat $infofile | grep "formatted_address" | awk -F"\"" '{print "ADDRESS",NR,":",$4}'
+fi
+rm $infofile -f

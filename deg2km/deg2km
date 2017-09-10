@@ -1,0 +1,8 @@
+#!/bin/bash
+deg=$1
+ER=6371
+PI=3.141592
+
+echo "scale=6; $deg*2*$PI*$ER/360" | bc
+
+#echo $deg | awk -v ER=$ER -v PI=$PI '{printf "%.6f\n", $1*2*PI*ER/360}'

@@ -1,0 +1,22 @@
+#!/bin/bash
+IFS=$'\n'
+if [ -z $1 ];then
+	echoerr "USAGE:$0 [sacfnames]"
+	exit 0;
+fi
+
+saclst kstnm kcmpnm f $@ | awk '{print $2,$3,$1}' | sort > st.temp
+cat st.temp | awk '{print $1,$2}' | uniq > st.uniq.temp
+
+for line in $(cat st.uniq.temp);do
+	cat st.temp | grep $line > sel.temp
+	N=$(cat sel.temp | wc -l)
+	
+	if [ $N != "1" ];then
+		flist=$(cat sel.temp | awk '{printf "%s ",$3}')
+		echo $line $N, $flist
+	fi
+	rm -f sel.temp
+done
+
+rm -f st.temp st.uniq.temp

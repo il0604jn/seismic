@@ -1,0 +1,58 @@
+#!/bin/bash
+if [ -z $2 ];then
+com=$(echo $0 | awk -F"/" '{print $NF}')
+cat <<catend
+USAGE: $com [input filename] [output filename]
+
+== input file structure ==
+yyyy-mm-dd hh:mm:ss.s
+stnm1 stla1 stlo1 Parr1 Sarr1 (any comments)
+stnm2 stla2 stlo2 Parr2 Sarr2 (any comments)
+stnm3 stla3 stlo3 Parr3 Sarr3 (any comments)
+...
+
+*1st line: reference time.
+Parr, Sarr: seconds w.r.t. reference time.
+*If there is no P or S, put "x".
+*To comment specific line, add "#".
+catend
+exit 0
+fi
+
+input=$1
+HYPphase=$2;echo -n > $HYPphase
+### MAKING HYPOINVERSE PHASE FILE ###
+IFS=$'\n'
+for line in $(cat $input | head -n 1);do
+	odate=$(echo $line | awk '{print $1}')
+	otime=$(echo $line | awk '{print $2}')
+done
+for line in $(cat $input | grep -v '#' | grep -v ":");do
+	stnm=$(echo $line | awk '{printf "%-4s", $1}')
+	stla=$(echo $line | awk '{print $2}')
+	stlo=$(echo $line | awk '{print $3}')
+	Parr=$(echo $line | awk '{print $4}')
+	Sarr=$(echo $line | awk '{print $5}')
+
+	datetime=$(date -d "$odate $otime" +%y%m%d%H%M%S)
+	msec=$(date -d "$odate $otime" +%N | awk '{print $1/1000000}')
+	origintime=$datetime.$msec
+
+	datetime=$(date -d "$odate $otime + $Parr second" +%y%m%d%H%M%S)
+	msec=$(date -d "$odate $otime +  $Parr second" +%N | awk '{printf "%03.0f", $1/1000000}')
+	Parrtime=$datetime.$msec
+
+	datetime=$(date -d "$odate $otime + $Sarr second" +%y%m%d%H%M)
+	sec=$(date -d "$odate $otime + $Sarr second" +%S)
+	msec=$(date -d "$odate $otime +  $Sarr second" +%N | awk '{printf "%02.0f", $1/10000000}')
+	Sdatetime=$datetime
+	Ssec=$sec.$msec
+
+	if [ "$Parr" != "x" ];then
+		echo $stnm $Parrtime | awk '{printf "%-4sIP 0 %s\n",$1,$2}'>> $HYPphase
+	fi
+	if [ "$Sarr" != "x" ];then
+		echo $stnm $Sdatetime $Ssec | awk '{printf "%-4s     %s            %sIS\n",$1,$2,$3}' >> $HYPphase
+	fi
+done
+echo "Making phasefile [$HYPphase] done!" 1>&2

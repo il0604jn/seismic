@@ -1,0 +1,13 @@
+#!/bin/bash
+if [ -z "$4" ];then
+	echoerr "USAGE: $0 [evla] [evlo] [stla] [stlo]"
+fi
+evla=$1
+evlo=$2
+stla=$3
+stlo=$4
+
+echo "fg seismogram;ch evla $evla evlo $evlo stla $stla stlo $stlo;w dist.temp.sac;q" | sac
+saclst dist f dist.temp.sac | awk '{printf "%s",$2}'
+
+rm -f dist.temp.sac

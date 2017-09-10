@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ $7 ];then
+	y=$1
+	m=$2
+	d=$3
+	H=$4
+	M=$5
+	S=$6
+	inc_sec=$7
+	sec=$(htoe $y $m $d $H $M $S)
+	mod_sec=$(echo $sec | awk -v inc_sec=$inc_sec '{printf "%f",$1+inc_sec}')
+	etoh $mod_sec | awk -v S=$S '{printf "%04d %02d %02d %02d %02d %06.3f\n",$1,$2,$3,$4,$5,$6}'
+else
+	echo "USAGE: date_addsec yyyy mm dd HH MM SS.SSS deltaT(sec)"
+fi

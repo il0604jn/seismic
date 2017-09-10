@@ -1,0 +1,40 @@
+
+
+#!/bin/bash
+if [ -z  $1 ];then
+	comm=$(echo $0 | awk -F"/" '{print $NF}')
+	echo -e "USAGE:\n\t$comm [input sacfiles]"
+	echo -e "EXAMPLES:\n\t$comm *.SAC\n\t$comm *.HHZ*.SAC\n\t$comm A.SAC B.SAC C.SAC"
+	exit 0
+fi
+stfile=/home/houng/stinfo/korea/stInfo/station.kma.20140407.info
+for fname in $(ls $@);do
+	stnm=$(getSACheader $fname kstnm)
+	cmpnm=$(getSACheader $fname kcmpnm)
+	cmp=$(echo $cmpnm | cut -c 3-3)
+	info=$(cat $stfile | awk -v stnm=$stnm '{if($1==stnm) print $0}')
+	stla=$(echo $info | awk '{print $2}')
+	stlo=$(echo $info | awk '{print $3}')
+	stel=$(echo $info | awk '{print $4}')
+	if [ $cmp = "N" ];then
+		cmpaz=0
+		cmpinc=90
+	elif [ $cmp = "E" ];then
+		cmpaz=90
+		cmpinc=90
+	elif [ $cmp = "Z" ];then
+		cmpaz=0
+		cmpinc=0
+	else
+		cmpaz=-12345
+		cmpinc=-12345
+	fi
+#	echo $fname $stla $stlo $cmpaz $cmpinc
+sac <<end
+r $fname
+ch stla $stla stlo $stlo stel $stel
+ch cmpaz $cmpaz cmpinc $cmpinc
+wh
+q
+end
+done

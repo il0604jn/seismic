@@ -1,0 +1,15 @@
+#!/bin/bash
+if [ $6 ];then
+	y=$1
+	m=$2
+	d=$3
+	H=$4
+	M=$5
+	S=$6
+
+	utc_sec=$(htoe $y $m $d $H $M $S)
+	kst_sec=$(echo $utc_sec | awk '{printf "%f",$1+32400}')
+	etoh $kst_sec | awk -v S=$S '{printf "%04d %02d %02d %02d %02d %06.3f\n",$1,$2,$3,$4,$5,S}'
+else
+	echo "USAGE: utc2kst yyyy mm dd HH MM SS.SSS"
+fi
