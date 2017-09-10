@@ -1,0 +1,76 @@
+#!/bin/bash
+if [ -z $1 ];then
+	echo "Generates SAC binary file from 2-column (time amp) ASCII file."
+	echo
+	echo "USAGE: asc2sac [fname] [(output fname)]"
+	echo
+	echo "[fname]: 2-column (time amp) ascii filename"
+	echo "[output fname]: output SAC fname. default = <fname.SAC>"
+	exit 0
+else
+	fname=$1
+fi
+if [ -z $2 ];then
+	sacfile=$fname.SAC
+else
+	sacfile=$2
+fi
+
+kstnm=STN
+sacascfile=$sacfile.ascii 
+
+delta=$(head $fname | awk '{if(NR==7) t1=$1;if(NR==8) t2=$1;}END{printf "%.2lf",t2-t1}')
+npts=$(cat $fname | wc -l)
+b=0.0
+e=$(echo $npts $delta | awk '{printf "%lf", $1*$2}')
+o=$(head -n 1 $fname | awk '{printf "%.12f", -1*$1}')
+
+minmaxinfo=$(minmax $fname)
+depmin=$(echo $minmaxinfo | awk -F"[</>]" '{printf "%.12f", $5}')
+depmax=$(echo $minmaxinfo | awk -F"[</>]" '{printf "%.12f", -6}')
+#### make sac file ####
+cat >$sacascfile <<catend
+     $delta  $depmin       $depmax      -12345.00      -12345.00
+   $b       $e      $o      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00       151.4077      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+      -12345.00      -12345.00      -12345.00      -12345.00      -12345.00
+     2000        01        00        00        00
+        0         6         0         0      $npts
+    -12345    -12345    -12345    -12345    -12345
+         1    -12345    -12345    -12345    -12345
+    -12345    -12345    -12345    -12345    -12345
+    -12345    -12345    -12345    -12345    -12345
+    -12345    -12345    -12345    -12345    -12345
+         1         1         1         1         1
+$kstnm     -12345
+-12345  -12345  -12345
+-12345  -12345  -12345
+-12345  -12345  -12345
+-12345  -12345  -12345
+-12345  -12345  -12345
+-12345  -12345  -12345
+-12345  -12345  -12345   
+catend
+
+cat $fname | awk '{
+if(NR%5==1 && NR!=1) printf "\n"
+printf "%.12lf ", $2
+}' >> $sacascfile
+
+sac <<sacend
+r alpha $sacascfile
+mul 1
+w $sacfile
+q
+sacend
+rm $sacascfile

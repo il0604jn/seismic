@@ -1,0 +1,67 @@
+#!/bin/bash
+#USAGE: sac2asc [sac fname] ([output filename])
+# change the sac file to time,amplitude file
+# if the SAC header "o" is set, then it is aligned from "o" (i.e., zero = origin time).
+# if the SAC header "o" equals to -12345, then it is aligned from "b"
+
+if [ -z $1 ];then
+	echo "USAGE: sac2asc [sac fname] ([output filename])"
+	echo "  Change the sac file to time,amplitude ascii file"
+	echo "  if the SAC header \"o\" is set, then it is aligned from \"o\" (0 = otime)."
+	echo "  if the SAC header "o" equals to -12345, then it is aligned from \"b\"."
+	exit 0
+fi
+
+input=$1
+if [ -z $2 ];then
+	out=$1."ASCII"
+else
+	out=$2
+fi
+#echo $out
+sac <<SACEND
+r $input
+w alpha sactoasciitemporaryfile
+q
+SACEND
+otime=$(getSACheader $input o)
+btime=$(getSACheader $input b)
+if [ $otime = "-12345" ];then
+	o=0
+else
+	o=$(echo "scale=3; $otime - $btime" | bc)
+fi
+
+
+cat sactoasciitemporaryfile | awk -v o=$o 'BEGIN{cnt=0};{
+if(NR==1) dt=$1
+if(NR>30)
+{
+	if ($5!="")
+	{
+		printf "%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n", cnt*dt-o,$1,(cnt+1)*dt-o,$2,(cnt+2)*dt-o,$3,(cnt+3)*dt-o,$4,(cnt+4)*dt-o,$5;
+		cnt+=5;
+	}
+	else if($4!="")
+	{
+		printf "%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n", cnt*dt-o,$1,(cnt+1)*dt-o,$2,(cnt+2)*dt-o,$3,(cnt+3)*dt-o,$4;
+		cnt+=4;
+	}
+	else if($3!="")
+	{
+		printf "%lf %.12lf\n%lf %.12lf\n%lf %.12lf\n", cnt*dt-o,$1,(cnt+1)*dt-o,$2,(cnt+2)*dt-o,$3;
+		cnt+=3;
+	}
+	else if($2!="")
+	{
+		printf "%lf %.12lf\n%lf %.12lf\n", cnt*dt-o,$1,(cnt+1)*dt-o,$2;
+		cnt+=2;
+	}
+	else if($1!="")
+	{
+		printf "%lf %.12lf\n", cnt*dt-o,$1;
+		cnt+=1;
+	}
+}
+}' >$out
+rm sactoasciitemporaryfile

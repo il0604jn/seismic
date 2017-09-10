@@ -1,0 +1,19 @@
+#!/bin/bash
+# USAGE
+#	getgmttime [sac filename] [o | t0 | t1 | etc.]
+
+fname=$1
+phase=$2
+
+
+if [ -z $(getSACheader $fname $phase) ];then
+	echo $"ERROR: No SAC file exists"
+	exit 0
+elif [ $(getSACheader $fname $phase | grep 12345) ];then
+	echo "ERROR: No $phase in SAC header."
+	exit 0
+else
+	reftime=$(saclst kzdate kztime f $fname | awk '{print $2,$3}')
+	arr=$(saclst $phase f $fname | awk '{print $2}')
+	date -d "$reftime KST +$arr sec" +%Y"/"%m"/"%d" "%H":"%M":"%S"."%N
+fi

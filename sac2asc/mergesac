@@ -1,0 +1,28 @@
+#!/bin/bash
+# Usage
+# mergesac [input sac files] [output sac file name]
+# If you want to use asterisk (*), you have to use quotation marks.
+# e.g.> "*".sac
+
+input=$1
+out=$2
+runfile=runmergesac
+echo '#!/bin/bash' > $runfile
+echo 'sac <<sacend' > $runfile
+count=1
+for fname in $(ls $input);do
+echo $fname
+if [ $count = 1 ];then
+	echo r $fname >> $runfile
+else
+	echo merge $fname >> $runfile
+fi
+let count+=1
+done
+echo "w" $out >> $runfile
+echo "q" >> $runfile
+echo "sacend" >> $runfile
+
+chmod +x $runfile
+./$runfile
+#rm $runfile
